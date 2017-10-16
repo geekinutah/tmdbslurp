@@ -4,14 +4,15 @@ import tmdbsimple as tmdb
 
 #from pprint import pprint
 
+FREQUENCY = 10
+OPS_PER_TICK = 40
+
 class slurper:
-    FREQUENCY = 10
-    OPS_PER_TICK = 40
 
     def __init__(self, first_id=1, last_id=-1, id_list=None, api_key=None,
             frequency=FREQUENCY, operations=OPS_PER_TICK, *args, **kwargs):
         self.opcount = 0
-        if self.api_key:
+        if api_key:
             tmdb.API_KEY = self.api_key
         else:
             raise(RuntimeError("You must specify an api_key"))

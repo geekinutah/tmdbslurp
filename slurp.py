@@ -2,12 +2,13 @@
 
 import argparse
 from tmdbslurper import slurper
+from tmdbslurper.slurper import slurper as slurpy
 #from pprint import pprint
 
 def start_slurping(first_id=1, last_id=-1, api_key=None,
         operations=slurper.OPS_PER_TICK, frequency=slurper.FREQUENCY,
         *args, **kwargs):
-    s = slurper(
+    s = slurpy(
             first_id=first_id,
             last_id=last_id,
             api_key=api_key,
