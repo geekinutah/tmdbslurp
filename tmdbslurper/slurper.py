@@ -1,5 +1,3 @@
-import sqlite3
-
 import tmdbsimple as tmdb
 
 #from pprint import pprint
@@ -7,7 +5,7 @@ import tmdbsimple as tmdb
 FREQUENCY = 10
 OPS_PER_TICK = 40
 
-class slurper:
+class Slurper:
 
     def __init__(self, first_id=1, last_id=-1, id_list=None, api_key=None,
             frequency=FREQUENCY, operations=OPS_PER_TICK, *args, **kwargs):
@@ -86,15 +84,55 @@ class slurper:
                 }
         return to_return
 
-    def go(download_images=False, dump_to_sqlite=None, *args, **kwargs):
-        """
-        Thoughts:
-            if there is an ids array, go slurp things only in that array.
-            if there is a first and a negative last, just go slurp in order.
-            if there is a first and a last, only slurp in that range.
-        """
-        if dump_to_sqlite:
-            sqlite3.connect(dump_to_sqlite)
-            """Do stuff here"""
-        pass
+    def _get_Movie(self, id=0, *args, **kwargs):
+        if id:
+          m = tmdb.Movie(id)
+          return m
+
+    def _get_Episode(self, series_id=0, season_num=0, episode_num=0,
+            *args, **kwargs):
+        if series_id and season_num and episode_num:
+            e = tmdb.TV_Episodes(series_id, season_num, episode_num)
+            t = tmdb.TV(series_id)
+            return (t, e)
+
+    def _get_TV(self, series_id=0, *args, **kwargs):
+        if series_id:
+            t = tmdb.TV(series_id)
+            return t
+
+    def _get_Series_children_matrix(self, series_id=0, *args, **kwargs):
+        to_return = []
+        if series_id:
+            t = self._get_TV(series_id)
+            seasons = t.info()['series']
+            for s in seasons:
+                s_num = s['season_number']
+                e_count = s['episode_count']
+                for i in range(1, e_count):
+                    to_return.append({
+                        'season': s_num,
+                        'episode': i})
+
+        return to_return
+
+    def go(self, download_images=False, *args, **kwargs):
+        to_return = { 'movies': [], 'episodes': [] }
+        if self.ids:
+            pass
+        else:
+            ids = range(self.first_id, self.last_id)
+
+        for i in ids:
+            (obj, obj_id) = i.split('-')
+            if obj == 'series':
+                for child in self._get_Series_children_matrix(obj_id):
+                    e = self._get_Episode(obj_id, child['season'], child['episode'])
+                    results = self._get_episode_fields(e)
+                    to_return['episodes'].append(results)
+            elif obj == 'movie':
+                results = self._get_movie_fields(self._get_Movie(obj_id))
+                to_return['movies'].append(results)
+
+        return to_return
 

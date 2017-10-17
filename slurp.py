@@ -2,8 +2,9 @@
 
 import argparse
 from tmdbslurper import slurper
-from tmdbslurper.slurper import slurper as slurpy
-#from pprint import pprint
+from tmdbslurper.slurper import Slurper as slurpy
+from pprint import pprint
+import sys
 
 def start_slurping(first_id=1, last_id=-1, api_key=None,
         operations=slurper.OPS_PER_TICK, frequency=slurper.FREQUENCY,
@@ -14,18 +15,18 @@ def start_slurping(first_id=1, last_id=-1, api_key=None,
             api_key=api_key,
             operations=operations,
             frequency=frequency)
-    s.go(download_images=True)
+    pprint(s.go(download_images=True))
 
 def get_args():
+    to_return = None
+    list_format = 'Filename with list formatted like so:\nmovie-2\nseries-45netc.'
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--first-id",
-            type=int,
-            help="Starting movie ID to scrape",
-            default=1)
-    parser.add_argument("-l", "--last-id",
-            type=int,
-            help="Optional ending moving ID",
-            default=-1)
+    parser.add_argument('-i', nargs='?', type=argparse.FileType('r'),
+            default=sys.stdin,
+            help=list_format)
+    parser.add_argument('-o', nargs='?', type=argparse.FileType('w'),
+            default=sys.stdout,
+            help='JSON results, one object per line will be written out')
     parser.add_argument('-k', "--api-key",
             type=int,
             help="A valid TMDB API key")
@@ -37,7 +38,8 @@ def get_args():
             type=int,
             help="Frequency of operations in seconds",
             default=slurper.FREQUENCY)
-    return parser.parse_args()
+    to_return = parser.parse_args()
+    return to_return
 
 if __name__ == "__main__":
     args = get_args()
