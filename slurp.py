@@ -6,29 +6,30 @@ from tmdbslurper.slurper import Slurper as slurpy
 from pprint import pprint
 import sys
 
-def start_slurping(first_id=1, last_id=-1, api_key=None,
+def start_slurping(infile=None, outfile=None, api_key=None,
         operations=slurper.OPS_PER_TICK, frequency=slurper.FREQUENCY,
         *args, **kwargs):
+
+    ids = infile.read().splitlines()
     s = slurpy(
-            first_id=first_id,
-            last_id=last_id,
+            id_list=ids,
             api_key=api_key,
             operations=operations,
             frequency=frequency)
-    pprint(s.go(download_images=True))
+    pprint(s.go(download_images=True), stream=outfile)
 
 def get_args():
     to_return = None
     list_format = 'Filename with list formatted like so:\nmovie-2\nseries-45netc.'
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', nargs='?', type=argparse.FileType('r'),
+    parser.add_argument('-infile', nargs='?', type=argparse.FileType('r'),
             default=sys.stdin,
             help=list_format)
-    parser.add_argument('-o', nargs='?', type=argparse.FileType('w'),
+    parser.add_argument('-outfile', nargs='?', type=argparse.FileType('w'),
             default=sys.stdout,
             help='JSON results, one object per line will be written out')
     parser.add_argument('-k', "--api-key",
-            type=int,
+            type=str,
             help="A valid TMDB API key")
     parser.add_argument('-o', "--operations",
             type=int,
@@ -43,4 +44,4 @@ def get_args():
 
 if __name__ == "__main__":
     args = get_args()
-    start_slurping(args)
+    start_slurping(**vars(args))
