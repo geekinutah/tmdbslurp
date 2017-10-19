@@ -22,18 +22,6 @@ class Slurper(object):
             raise(RuntimeError("You must specify an api_key"))
         self.id_list = id_list
 
-    def _handle_http_errors(e, *args, **kwargs):
-        #import pdb; pdb.set_trace()
-        e_code = e.response.status_code
-        if e_code == 404:
-            print("Got a 404, that shouldn't really happen.")
-            raise
-        if e_code == 429:
-            sleep_for = int(e.response.headers['Retry-After'])
-            print("Sleeping %s seconds for rate limit" % sleep_for)
-            time.sleep(sleep_for)
-            raise
-
     def _get_tv_rating(self, tv, iso_3166_1='US'):
         to_return = "NR"
         for r in tv.content_ratings()['results']:
@@ -141,7 +129,7 @@ class Slurper(object):
 
         for i in self.id_list:
             (obj, obj_id) = i.split('-')
-            pprint('MIKE:   %s' % obj)
+            #pprint('MIKE:   %s' % obj)
             if obj == 'series':
                 for child in self._get_Series_children_matrix(obj_id):
                     while True:
@@ -155,9 +143,9 @@ class Slurper(object):
                             status = int(h.response.status_code)
                             if status  == 429:
                                 sleep_for = int(
-                                        e.response.headers['Retry-After'])
-                                print("Sleeping %s seconds for rate limit" %
-                                        sleep_for)
+                                        h.response.headers['Retry-After'])
+                                #print("Sleeping %s seconds for rate limit" %
+                                        #sleep_for)
                                 time.sleep(sleep_for)
                                 continue
                         break
