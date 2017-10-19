@@ -1,4 +1,4 @@
-# Project Title
+# tmdbslurp
 
 Uses the TMDB API to get information about movies and episodes
 
