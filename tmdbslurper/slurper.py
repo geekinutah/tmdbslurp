@@ -1,14 +1,34 @@
 import sys
+import time
 sys.path.append('..')
+
 import tmdbsimple as tmdb
+
+from functools import wraps
+from requests.exceptions import HTTPError
 
 #from pprint import pprint
 
 FREQUENCY = 10
 OPS_PER_TICK = 40
 
-class Slurper:
+class ErrorIgnore(object):
+   def __init__(self, errors, errorcall = None):
+      self.errors = errors
+      self.errorcall = errorcall
 
+   def __call__(self, function):
+      def returnfunction(*args, **kwargs):
+         try:
+            return function(*args, **kwargs)
+         except Exception as E:
+            if type(E) not in self.errors:
+               raise E
+            if self.errorcall is not None:
+               self.errorcall(E, *args, **kwargs)
+      return returnfunction
+
+class Slurper(object):
     def __init__(self, id_list=None, api_key=None,
             frequency=FREQUENCY, operations=OPS_PER_TICK, *args, **kwargs):
         self.opcount = 0
@@ -17,6 +37,16 @@ class Slurper:
         else:
             raise(RuntimeError("You must specify an api_key"))
         self.id_list = id_list
+
+    def _handle_http_errors(e, *args, **kwargs):
+        #import pdb; pdb.set_trace()
+        e_code = e.response.status_code
+        if e_code == 404:
+            print("Got a 404, that shouldn't really happen.")
+        if e_code == 429:
+            sleep_for = int(e.response.headers['Retry-After'])
+            print("Sleeping %s seconds for rate limit" % sleep_for)
+            time.sleep(sleep_for)
 
     def _get_tv_rating(self, tv, iso_3166_1='US'):
         to_return = "NR"
@@ -102,7 +132,6 @@ class Slurper:
         if series_id:
             t = tmdb.TV(series_id)
             return t
-
     def _get_Series_children_matrix(self, series_id=0, *args, **kwargs):
         to_return = []
         if series_id:
@@ -118,6 +147,7 @@ class Slurper:
 
         return to_return
 
+    @ErrorIgnore(errors = [HTTPError], errorcall = _handle_http_errors) 
     def go(self, *args, **kwargs):
         from pprint import pprint
         to_return = { 'movies': [], 'episodes': [] }
