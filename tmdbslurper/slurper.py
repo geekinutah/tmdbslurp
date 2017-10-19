@@ -4,7 +4,6 @@ sys.path.append('..')
 
 import tmdbsimple as tmdb
 
-from functools import wraps
 from requests.exceptions import HTTPError
 
 #from pprint import pprint
@@ -12,21 +11,6 @@ from requests.exceptions import HTTPError
 FREQUENCY = 10
 OPS_PER_TICK = 40
 
-class ErrorIgnore(object):
-   def __init__(self, errors, errorcall = None):
-      self.errors = errors
-      self.errorcall = errorcall
-
-   def __call__(self, function):
-      def returnfunction(*args, **kwargs):
-         try:
-            return function(*args, **kwargs)
-         except Exception as E:
-            if type(E) not in self.errors:
-               raise E
-            if self.errorcall is not None:
-               self.errorcall(E, *args, **kwargs)
-      return returnfunction
 
 class Slurper(object):
     def __init__(self, id_list=None, api_key=None,
@@ -43,10 +27,12 @@ class Slurper(object):
         e_code = e.response.status_code
         if e_code == 404:
             print("Got a 404, that shouldn't really happen.")
+            raise
         if e_code == 429:
             sleep_for = int(e.response.headers['Retry-After'])
             print("Sleeping %s seconds for rate limit" % sleep_for)
             time.sleep(sleep_for)
+            raise
 
     def _get_tv_rating(self, tv, iso_3166_1='US'):
         to_return = "NR"
@@ -147,7 +133,6 @@ class Slurper(object):
 
         return to_return
 
-    @ErrorIgnore(errors = [HTTPError], errorcall = _handle_http_errors) 
     def go(self, *args, **kwargs):
         from pprint import pprint
         to_return = { 'movies': [], 'episodes': [] }
@@ -159,10 +144,23 @@ class Slurper(object):
             pprint('MIKE:   %s' % obj)
             if obj == 'series':
                 for child in self._get_Series_children_matrix(obj_id):
-                    e = self._get_Episode(obj_id, child['season'], child['episode'])
-                    t = self._get_TV(obj_id)
-                    results = self._get_episode_fields(t, e)
-                    to_return['episodes'].append(results)
+                    while True:
+                        try:
+                            e = self._get_Episode(obj_id,
+                                    child['season'], child['episode'])
+                            t = self._get_TV(obj_id)
+                            results = self._get_episode_fields(t, e)
+                            to_return['episodes'].append(results)
+                        except HTTPError as h:
+                            status = int(h.response.status_code)
+                            if status  == 429:
+                                sleep_for = int(
+                                        e.response.headers['Retry-After'])
+                                print("Sleeping %s seconds for rate limit" %
+                                        sleep_for)
+                                time.sleep(sleep_for)
+                                continue
+                        break
             elif obj == 'movie':
                 results = self._get_movie_fields(self._get_Movie(obj_id))
                 to_return['movies'].append(results)
