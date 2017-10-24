@@ -150,8 +150,21 @@ class Slurper(object):
                                 continue
                         break
             elif obj == 'movie':
-                results = self._get_movie_fields(self._get_Movie(obj_id))
-                to_return['movies'].append(results)
+                    while True:
+                        try:
+                            results = self._get_movie_fields(
+                                self._get_Movie(obj_id))
+                            to_return['movies'].append(results)
+                        except HTTPError as h:
+                            status = int(h.response.status_code)
+                            if status  == 429:
+                                sleep_for = int(
+                                        h.response.headers['Retry-After'])
+                                #print("Sleeping %s seconds for rate limit" %
+                                        #sleep_for)
+                                time.sleep(sleep_for)
+                                continue
+                        break
 
         return to_return
 
