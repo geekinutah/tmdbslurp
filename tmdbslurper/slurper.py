@@ -3,10 +3,9 @@ import time
 sys.path.append('..')
 
 import tmdbsimple as tmdb
+import logging
 
 from requests.exceptions import HTTPError
-
-#from pprint import pprint
 
 FREQUENCY = 10
 OPS_PER_TICK = 40
@@ -145,6 +144,12 @@ class Slurper(object):
                             e = self._get_Episode(obj_id,
                                     child['season'], child['episode'])
                             t = self._get_TV(obj_id)
+                            if e is None:
+                                logging.debug("TV Series ID: %s" % i)
+                                logging.debug(
+                                        "Episode %s, season %s is None" % (
+                                            child['season'],
+                                            child['episode']))
                             results = self._get_episode_fields(t, e)
                             to_return['episodes'].append(results)
                         except HTTPError as h:
@@ -166,8 +171,6 @@ class Slurper(object):
                             if status  == 429:
                                 sleep_for = int(
                                         h.response.headers['Retry-After'])
-                                #print("Sleeping %s seconds for rate limit" %
-                                        #sleep_for)
                                 time.sleep(sleep_for)
                                 continue
                         break

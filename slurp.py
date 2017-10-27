@@ -5,6 +5,9 @@ from tmdbslurper import slurper
 from tmdbslurper.slurper import Slurper as slurpy
 from pprint import pprint
 import sys
+import logging
+LOG_FILENAME = 'slurp.log'
+logging.basicConfig(filename=LOG_FILENAME,level=logging.DEBUG)
 
 def start_slurping(infile=None, outfile=None, api_key=None,
         operations=slurper.OPS_PER_TICK, frequency=slurper.FREQUENCY,
