@@ -81,7 +81,7 @@ class Slurper(object):
     def _get_episode_fields(self, tv, episode):
         to_return = {
                   'description' : episode.info()['overview'],
-                  'runtimes' : tv.info()['episode_runtime'],
+                  'runtimes' : tv.info()['episode_run_time'],
                   'images' : episode.images(),
                   'rating' : self._get_tv_rating(tv),
                   'title' : episode.name,
