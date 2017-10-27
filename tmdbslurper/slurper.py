@@ -159,7 +159,7 @@ class Slurper(object):
                         except HTTPError as h:
                             status = int(h.response.status_code)
                             if status  == 429:
-                                sleep_for = int(
+                                sleep_for = 1 + int(
                                         h.response.headers['Retry-After'])
                                 time.sleep(sleep_for)
                                 continue
@@ -178,7 +178,7 @@ class Slurper(object):
                         except HTTPError as h:
                             status = int(h.response.status_code)
                             if status  == 429:
-                                sleep_for = int(
+                                sleep_for = 1 + int(
                                         h.response.headers['Retry-After'])
                                 time.sleep(sleep_for)
                                 continue
