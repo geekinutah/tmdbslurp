@@ -121,11 +121,15 @@ class Slurper(object):
                                 'episode': i})
             except HTTPError as h:
                 status = int(h.response.status_code)
-                if status  == 429:
+                if status == 429:
                     sleep_for = int(
                             h.response.headers['Retry-After'])
                     time.sleep(sleep_for)
                     continue
+                elif status == 404:
+                    logging.debug(
+                            "This TV series wasn't found: %s" % series_id)
+                    break
             break
 
         return to_return
@@ -159,6 +163,11 @@ class Slurper(object):
                                         h.response.headers['Retry-After'])
                                 time.sleep(sleep_for)
                                 continue
+                            elif status == 404:
+                                logging.debug(
+                                        "Episode %s, season %s wasn't found"
+                                        % (child['episode'], child['season']))
+                                break
                         break
             elif obj == 'movie':
                     while True:
