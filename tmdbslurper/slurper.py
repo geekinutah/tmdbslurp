@@ -108,21 +108,30 @@ class Slurper(object):
             return t
     def _get_Series_children_matrix(self, series_id=0, *args, **kwargs):
         to_return = []
-        if series_id:
-            t = self._get_TV(series_id)
-            seasons = t.info()['seasons']
-            for s in seasons:
-                s_num = s['season_number']
-                e_count = s['episode_count']
-                for i in range(1, e_count):
-                    to_return.append({
-                        'season': s_num,
-                        'episode': i})
+        while True:
+            try:
+                if series_id:
+                    t = self._get_TV(series_id)
+                    seasons = t.info()['seasons']
+                    for s in seasons:
+                        s_num = s['season_number']
+                        e_count = s['episode_count']
+                        for i in range(1, e_count):
+                            to_return.append({
+                                'season': s_num,
+                                'episode': i})
+            except HTTPError as h:
+                status = int(h.response.status_code)
+                if status  == 429:
+                    sleep_for = int(
+                            h.response.headers['Retry-After'])
+                    time.sleep(sleep_for)
+                    continue
+            break
 
         return to_return
 
     def go(self, *args, **kwargs):
-        from pprint import pprint
         to_return = { 'movies': [], 'episodes': [] }
         if not self.id_list:
             return to_return
