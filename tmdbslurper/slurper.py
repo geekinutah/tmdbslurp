@@ -82,7 +82,7 @@ class Slurper(object):
     def _get_episode_fields(self, tv, episode):
         to_return = {
                   'description' : episode.info()['overview'],
-                  #'runtime' : episode.runtime,
+                  'runtimes' : tv.info()['episode_runtime'],
                   'images' : episode.images(),
                   'rating' : self._get_tv_rating(tv),
                   'title' : episode.name,
@@ -138,7 +138,6 @@ class Slurper(object):
 
         for i in self.id_list:
             (obj, obj_id) = i.split('-')
-            #pprint('MIKE:   %s' % obj)
             if obj == 'series':
                 for child in self._get_Series_children_matrix(obj_id):
                     while True:
@@ -153,8 +152,6 @@ class Slurper(object):
                             if status  == 429:
                                 sleep_for = int(
                                         h.response.headers['Retry-After'])
-                                #print("Sleeping %s seconds for rate limit" %
-                                        #sleep_for)
                                 time.sleep(sleep_for)
                                 continue
                         break
