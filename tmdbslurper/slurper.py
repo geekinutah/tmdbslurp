@@ -148,8 +148,8 @@ class Slurper(object):
                                 logging.debug("TV Series ID: %s" % i)
                                 logging.debug(
                                         "Episode %s, season %s is None" % (
-                                            child['season'],
-                                            child['episode']))
+                                            child['episode'],
+                                            child['season']))
                             results = self._get_episode_fields(t, e)
                             to_return['episodes'].append(results)
                         except HTTPError as h:
