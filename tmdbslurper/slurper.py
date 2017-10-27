@@ -149,11 +149,12 @@ class Slurper(object):
                                     child['season'], child['episode'])
                             t = self._get_TV(obj_id)
                             if e is None:
-                                logging.debug("TV Series ID: %s" % i)
+                                logging.debug("TV Series ID: %s" % obj_id)
                                 logging.debug(
                                         "Episode %s, season %s is None" % (
                                             child['episode'],
                                             child['season']))
+                                continue
                             results = self._get_episode_fields(t, e)
                             to_return['episodes'].append(results)
                         except HTTPError as h:
