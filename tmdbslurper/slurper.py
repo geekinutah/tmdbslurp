@@ -94,17 +94,26 @@ class Slurper(object):
         if id:
           m = tmdb.Movies(id)
           return m
+        else:
+            raise(RuntimeError("Movie cannot be None"))
 
-    def _get_Episode(self, series_id=0, season_num=0, episode_num=0,
+    def _get_Episode(self, series_id=None, season_num=None, episode_num=None,
             *args, **kwargs):
-        if series_id and season_num and episode_num:
-            e = tmdb.TV_Episodes(series_id, season_num, episode_num)
-            return e
+        if series_id is None or season_num is None or episode_num is None:
+            raise(RuntimeError("Series, season and episode cannot be None"))
+
+        e = tmdb.TV_Episodes(series_id, season_num, episode_num)
+
+        return e
 
     def _get_TV(self, series_id=0, *args, **kwargs):
         if series_id:
             t = tmdb.TV(series_id)
             return t
+        else:
+            raise(RuntimeError("Series cannot be None"))
+
+
     def _get_Series_children_matrix(self, series_id=0, *args, **kwargs):
         to_return = []
         while True:
